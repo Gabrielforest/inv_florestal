@@ -247,43 +247,21 @@ selarv <- subset(arv,!is.na(dap) & !is.na(htre)
 (bs<-as.vector(coef(ajsh)))
 
 #Schumacher & Hall                v = β0 × dapβ1 × htβ2
-#selarv$vprod_6 <- exp(bs[1] + bs[2] * log(selarv$dap) + bs[3] * log(selarv$htre))
-#selarv$vprod_6 <- bs[1] + bs[2] * selarv$dap + bs[3] * selarv$htre
 selarv$vprod_6 <- (bs[1] * (selarv$dap ^ bs[2]) * (selarv$htre^bs[3]))
 
-# ace ---------------------------------------------------------------------
-sig <- 0.05
+parc <- with(selarv,
+             aggregate(list(vprod_6 = vprod_6),
+                       list(codplantio = codplantio,
+                            areaplantio = areaplantio,
+                            parcela = parcela,
+                            areaparc = areaparc,
+                            espacamento = espacamento,
+                            matgen = matgen, idade = idade, x = x, y = y),
+                       sum))
+#criar coluna somando vcomcc e vicc, de acordo com os agentes agregadores fazenda, talh?o, area etc; #sum= somar volumes por parcela
 
-inv <- aggregate(list(vary = selarv$vprod_6),
-                 list(fazenda = selarv$codfazenda,
-                      codplantio = selarv$codplantio,
-                      areaplantio = selarv$areaplantio,
-                      estrato = selarv$matgen,
-                      parcela = selarv$parcela,
-                      areaparc = selarv$areaparc
-                 ),sum)
-estrato <- aggregate(list(areaest = inv$areaplantio),
-                     list(estrato = inv$estrato)
-                     ,sum)
-amostra <- inv[,c('estrato','parcela','areaparc','vary')]
+write.csv2(parc, './trabalho_final/hipso_parcela.csv')
 
-ace <- as.data.frame(estats_ace(estrato, amostra, sig = sig*100, fc_dim=1/10000))
-totace <- with(ace, ymstr * np)
-errototace <- with(ace, eunid * np)
-litotace <- totace - errototace
-lstotace <- totace + errototace
-
-print(paste('IC:',round(litotace),'<=T<=',round(lstotace),'m³',sep=''))
-
-areatot <- sum(estrato$areaest)
-N <- areatot * 10000/amostra$areaparc[1]
-acs <- as.data.frame(estats_acs(vy = amostra$vary, nt = N, sig = sig*100))
-acs$eperc # erro amostral em porcentagem
-yha_acs <- acs$ymed*10000/amostra$areaparc[1]
-erroinvha_acs <- acs$eunid*10000/amostra$areaparc[1]
-ytot_acs <- yha_acs*areatot
-erroinvtot_acs <- erroinvha_acs*areatot
-print(paste('IC:', round(ytot_acs-erroinvtot_acs),'<=T<=',round(ytot_acs+erroinvtot_acs),'m³',sep=''))
 
 
 
