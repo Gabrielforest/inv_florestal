@@ -1,5 +1,5 @@
 ##Amostragem casual estratificada
-dados <- read.csv2('./trabalho_final/hipso_parcela.csv')
+dados <- read.csv2("./trabalho_final/hipso_parcela.csv")
 names(dados)
 
 
@@ -7,10 +7,10 @@ names(dados)
 dados$vary <- dados$vprod_6 
 
 #conhecendo possíveis estratificações
-#quatro materiais
-matgen <- subset(dados, !duplicated(matgen), c('matgen')) 
+#3 materiais
+matgen <- subset(dados, !duplicated(matgen), c("matgen")) 
 
-calc <- subset(dados, !duplicated(codplantio), c('codplantio', 'areaplantio', 'matgen'))
+calc <- subset(dados, !duplicated(codplantio), c("codplantio", "areaplantio", "matgen"))
 
 
 mat1 <- subset(calc, matgen == 26)
@@ -28,20 +28,19 @@ areatot <- sum(areamattot)
 dados$areaest <- NA
 dados$areaest[dados$matgen == 26] <- areamat1
 dados$areaest[dados$matgen == 35] <- areamat2
-dados$areaest[dados$matgen == 54] <- areamat3
+dados$areaest[dados$matgen == 53] <- areamat3
 
 #escolhendo estratificação
 dados$estrato = NULL
 dados$estrato = dados$matgen
 
-########## alterar aq
+
 dados$vary <- dados$vprod_6; 
 
 names(dados)
 #VOLUME DE INDIVíDUO SOMADO P/ OBTER VOLUME POR PARCELA
 dados2 <- with(dados, aggregate(list(vary = vary),
                              list(areaest = areaest, areaparc = areaparc, estrato = estrato, parcela = parcela),sum));
-########## alterar aq
 
 #alpha=5%
 sig <- 0.05 
@@ -82,7 +81,7 @@ estrato <- merge(estrato, calc)
 estrato$pnj <- with(estrato, areaest * 10000/areaparc)
 
 #Nomeando a população
-estrato$populacao <- 1
+estrato$populacao <- "Fazenda CH"
 
 #Área, número de amostras e número de amostras cabíveis na
 #população
@@ -152,66 +151,66 @@ populacao$errounid <- with(populacao, qt(1 - sig/2, gle) * systr)
 populacao$erroperc <- with(populacao, errounid/ymstr * 100)
 
 #Total e erro por hectare
-populacao$ymha <- with(populacao, ymstr * pn)
+populacao$ytstr <- with(populacao, ymstr * pn)
 populacao$errototal <- with(populacao, errounid * pn)
 
 #Total e erro por hectare
-populacao$ymha=with(populacao,ytstr/area);
-populacao$erroha=with(populacao,errototal/area);
+populacao$ymha <- with(populacao, ytstr/area)
+populacao$erroha <- with(populacao, errototal/area)
 
-View(populacao);
-write.csv2(populacao,'./trabalho_final/ACE_calculada.csv', row.names=F);
+View(populacao)
+write.csv2(populacao,"./trabalho_final/ACE_calculada.csv", row.names = F)
 
 
 
 
 
 #Volume/ha
-dados$vprod_6_ha=dados$vprod_6 * 10000/dados$areaparc
+dados$vprod_6_ha <- dados$vprod_6 * 10000/dados$areaparc
 View(dados)
 
 #para calcular o volume medio m³/ha 
-vmed_ha=mean(dados$vprod_6_ha);vmed_ha
+vmed_ha <- mean(dados$vprod_6_ha)
 
 #Variável de interesse
-y = dados$vprod_6;
+y <- dados$vprod_6
 
 #Média (m?/parcela)
-(ym = mean(y));
+(ym <- mean(y))
 
 #Tamanho da amostra
-(n = length(y));
+(n <- length(y))
 
 #Área parcela
 #Não compensa trabalhar com parcelas com tamanhos desiguais
-(areaparc = mean(dados$areaparc));
+(areaparc <- mean(dados$areaparc))
 
 
 #Área da fazenda  
-talhao = subset(dados,!duplicated(codplantio), c('codplantio','areaplantio')); #Subset - Pegar apenas uma informa??o por parcela
+talhao <- subset(dados,!duplicated(codplantio), c("codplantio","areaplantio")); #Subset - Pegar apenas uma informa??o por parcela
 View(talhao)
-(areafaz = sum(talhao$area))
+(areafaz <- sum(talhao$area))
 
 #Média por ha (m³/ha)
-(yha = ym*(10000/areaparc));
+(yha <- ym*(10000/areaparc))
 
 #Total populacional (m³)
-(ytot = yha*areafaz);
+(ytot <- yha * areafaz)
 
 #Erro inventário por ha (m³/ha)
-(erroinvha = populacao$errounid*(10000/areaparc));
+(erroinvha <- populacao$errounid * (10000/areaparc))
 
 #Intervalo de Confiança m³/parcela
-cat(paste(round(ym-populacao$errounid,2),' a ',round(ym+populacao$errounid,2),'m³/ha com 95% de confiança',sep=''))
+cat(paste(round(ym - populacao$errounid, 2), " a ", round(ym + populacao$errounid, 2),"m³/ha com 95% de confiança", sep = ""))
 
 #Intervalo de confiança em m³/ha
-cat(paste(round(yha-erroinvha,2),' a ',round(yha+erroinvha,2),'m³/ha com 95% de confiança',sep=''))
+cat(paste(round(yha - erroinvha, 2)," a ",round(yha + erroinvha, 2),"m³/ha com 95% de confiança", sep = ""))
 
 #Intervalo de confiança em m³/povoamento
-cat(paste(round((ytot - ytot*populacao$erroperc/100),2),
-          ' a ',
-          round((ytot + ytot*populacao$erroperc/100),2),
-          'm³/fazenda com 95% de confiança',sep=''))
+cat(paste(round((ytot - ytot * populacao$erroperc/100), 2),
+          " a ",
+          round((ytot + ytot * populacao$erroperc/100), 2),
+          "m³/fazenda com 95% de confiança", sep = ""))
 
 
 

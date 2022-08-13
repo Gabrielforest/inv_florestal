@@ -1,8 +1,12 @@
 #AMOSTRAGEM CASUAL SIMPLES - HIPSOMETRIA POR PARCELA
 
-arv<-read.csv2('arvores.csv');
+arv<-read.csv2('tbl.csv');
 View(arv);
 names(arv);
+
+arv$dap <- arv$CAP/pi
+names(arv) <- c("populacao", "parcela", "arvore", "fuste", "cap", "ht", "esp_casca", "obs", "dap")
+
 
 #Hipsometria por parcela
 
@@ -11,6 +15,7 @@ hipso<-data.frame(
   b0=NA,
   b1=NA
 )
+
 
 for(i in 1:nrow(hipso)){
   selarv<-subset(arv,
@@ -49,9 +54,14 @@ arv$vicc<-with(arv,6.436159e-05*dap^1.852143*htre^9.530665e-01);
 
 names(arv);
 
+arv$arvtal <- 1
+arv$areatal <- 17
+arv$areaparc <- 314
+
+arv <- subset(arv, !is.na(vicc))
+
 parc<-aggregate(list(vol=arv$vicc),
-                list(fazenda=arv$fazenda,
-                     talhao=arv$talhao,
+                list(talhao=arv$arvtal,
                      areatal=arv$areatal,
                      parcela=arv$parcela,
                      areaparc=arv$areaparc
