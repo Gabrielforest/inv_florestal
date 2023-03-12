@@ -34,16 +34,6 @@ arv <- merge(arv, hipso, by = "parcela")
 #Estimando as alturas totais
 arv$htest <- with(arv, exp(b0+b1/dap))
 
-#x11();
-#hist(arv$htest[arv$htest>0]);
-#hist(arv$ht[arv$ht>0],col="red",add=T);
-
-with(arv, plot(ht ~ dap, xlab = "dap(cm)",
-               ylab = "ht(m)",pch="*",col="green"))
-with(arv, points(htest~dap,pch="*",col="red"));
-
-#arv$htest[arv$dap==0|is.na(dap)]<-0
-
 arv$htre <- arv$ht
 ii <- is.na(arv$ht) | arv$ht==0
 arv$htre[ii] <- arv$htest[ii]
@@ -246,9 +236,7 @@ selarv <- subset(arv,!is.na(dap) & !is.na(htre)
 # selecionado o modelo de schumacher
 (bs<-as.vector(coef(ajsh)))
 
-#Schumacher & Hall                v = β0 × dapβ1 × htβ2
-#selarv$vprod_6 <- exp(bs[1] + bs[2] * log(selarv$dap) + bs[3] * log(selarv$htre))
-#selarv$vprod_6 <- bs[1] + bs[2] * selarv$dap + bs[3] * selarv$htre
+#Schumacher & Hall            Foi o melhor
 selarv$vprod_6 <- (bs[1] * (selarv$dap ^ bs[2]) * (selarv$htre^bs[3]))
 
 # ace ---------------------------------------------------------------------
@@ -267,23 +255,10 @@ estrato <- aggregate(list(areaest = inv$areaplantio),
                      ,sum)
 amostra <- inv[,c('estrato','parcela','areaparc','vary')]
 
-ace <- as.data.frame(estats_ace(estrato, amostra, sig = sig*100, fc_dim=1/10000))
+ace <- as.data.frame(estats_ace(estrato, amostra, sig = sig*100, fc_dim=1/1000))
 totace <- with(ace, ymstr * np)
 errototace <- with(ace, eunid * np)
 litotace <- totace - errototace
 lstotace <- totace + errototace
 
 print(paste('IC:',round(litotace),'<=T<=',round(lstotace),'m³',sep=''))
-
-areatot <- sum(estrato$areaest)
-N <- areatot * 10000/amostra$areaparc[1]
-acs <- as.data.frame(estats_acs(vy = amostra$vary, nt = N, sig = sig*100))
-acs$eperc # erro amostral em porcentagem
-yha_acs <- acs$ymed*10000/amostra$areaparc[1]
-erroinvha_acs <- acs$eunid*10000/amostra$areaparc[1]
-ytot_acs <- yha_acs*areatot
-erroinvtot_acs <- erroinvha_acs*areatot
-print(paste('IC:', round(ytot_acs-erroinvtot_acs),'<=T<=',round(ytot_acs+erroinvtot_acs),'m³',sep=''))
-
-
-
